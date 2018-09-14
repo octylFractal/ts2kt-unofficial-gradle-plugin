@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("com.techshroom.incise-blue") version "0.0.12"
+    id("net.researchgate.release") version "2.7.0"
     `java-gradle-plugin`
     `kotlin-dsl`
     kotlin("jvm") version embeddedKotlinVersion
@@ -35,6 +36,10 @@ gradlePlugin {
             implementationClass = "net.octyl.ts2kt.gradle.Ts2ktUnofficialPlugin"
         }
     }
+}
+
+tasks.named("afterReleaseBuild").configure {
+    dependsOn("publishPlugins")
 }
 
 repositories {
