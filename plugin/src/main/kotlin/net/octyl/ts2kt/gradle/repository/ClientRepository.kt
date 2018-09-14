@@ -22,26 +22,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.octyl.ts2kt.gradle
+package net.octyl.ts2kt.gradle.repository
 
-import net.octyl.ts2kt.gradle.util.field
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.property
+import net.octyl.ts2kt.gradle.repository.dependency.ClientDependency
+import org.gradle.api.file.FileCollection
 
-open class Ts2KtUnofficialExtension(project: Project) {
+sealed class ResolutionResult {
+    data class Success(val files: FileCollection,
+                       val dependencies: List<ClientDependency> = listOf()) : ResolutionResult()
 
-    val ts2ktVersionProperty = project.objects.property<String>().apply { set("0.1.3") }
-    val ts2KtExecutableProperty = project.layout.fileProperty()
+    data class NotFound(val error: Throwable? = null) : ResolutionResult()
+}
 
-    /**
-     * Version of the NPM package `ts2kt` to install.
-     * Defaults to `0.1.3`.
-     */
-    var ts2ktVersion by ts2ktVersionProperty.field
+interface ClientRepository {
 
     /**
-     *  Direct path to the `ts2kt` program to run.
+     * Resolve the given dependency to a set of typescript declarations.
      */
-    var ts2KtExecutable by ts2KtExecutableProperty.field
+    fun resolveDependency(dependency: ClientDependency): ResolutionResult
 
 }

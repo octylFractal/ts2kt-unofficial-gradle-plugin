@@ -26,7 +26,7 @@ package net.octyl.ts2kt.gradle
 
 import java.io.File
 
-fun cleanTs2KtRepositoryCaches() {
+fun cleanTs2ktRepositoryCaches() {
     val tmpDir = System.getProperties()["java.io.tmpdir"]
     val user = System.getProperties()["user.name"]
     File("$tmpDir/.gradle-test-kit-$user/caches/ts2kt-unoff-1").deleteRecursively()

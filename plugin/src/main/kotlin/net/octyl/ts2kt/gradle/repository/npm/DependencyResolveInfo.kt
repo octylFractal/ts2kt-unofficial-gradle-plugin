@@ -24,10 +24,10 @@
  */
 package net.octyl.ts2kt.gradle.repository.npm
 
-import org.gradle.api.artifacts.Dependency
+import net.octyl.ts2kt.gradle.repository.dependency.ClientDependency
 import java.io.File
 
-internal data class DependencyResolveInfo(val owner: Dependency,
+internal data class DependencyResolveInfo(val owner: ClientDependency,
                                           val groupCacheDir: File,
                                           val dependencyUrl: String) {
     val downloadTarget: File by lazy {
@@ -52,7 +52,7 @@ internal data class DependencyResolveInfo(val owner: Dependency,
     }
 }
 
-internal fun Dependency.resolveInfo(cacheDirectory: File, registryUrl: String): DependencyResolveInfo {
+internal fun ClientDependency.resolveInfo(cacheDirectory: File, registryUrl: String): DependencyResolveInfo {
     val groupCacheDir = cacheDirectory.resolve("./$group")
     val dependencyUrl = "$registryUrl/@$group/$name/-/$name-$version.tgz"
 

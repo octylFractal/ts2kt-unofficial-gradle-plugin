@@ -24,7 +24,8 @@
  */
 package net.octyl.ts2kt.gradle
 
-import net.octyl.ts2kt.gradle.sourceset.Ts2KtNewSourceSetConfiguration
+import net.octyl.ts2kt.gradle.repository.npm.NpmClientRepository
+import net.octyl.ts2kt.gradle.sourceset.Ts2ktNewSourceSetConfiguration
 import net.octyl.ts2kt.gradle.tasks.DiscoverTs2ktExecutable
 import net.octyl.ts2kt.gradle.util.registerInfer
 import org.gradle.api.Plugin
@@ -34,7 +35,7 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
 
-class Ts2KtUnofficialPlugin : Plugin<Project> {
+class Ts2ktUnofficialPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         if (!project.plugins.hasPlugin("kotlin")) {
             // We don't configure anything in this case.
@@ -46,23 +47,25 @@ class Ts2KtUnofficialPlugin : Plugin<Project> {
 
         val ext = project.addExtension()
 
+        ext.clientRepositories.add(NpmClientRepository(project))
+
         val discoverTaskProvider = project.addDiscoverTask(ext)
 
         val sourceSets = project.extensions.getByType<SourceSetContainer>()
-        sourceSets.all { Ts2KtNewSourceSetConfiguration(project, discoverTaskProvider, this).configure() }
+        sourceSets.all { Ts2ktNewSourceSetConfiguration(project, discoverTaskProvider, this).configure() }
     }
 
-    private fun Project.addExtension(): Ts2KtUnofficialExtension {
+    private fun Project.addExtension(): Ts2ktUnofficialExtension {
         return extensions.create("ts2ktUnofficial", this)
     }
 
-    private fun Project.addDiscoverTask(ext: Ts2KtUnofficialExtension): TaskProvider<DiscoverTs2ktExecutable> {
-        return project.tasks.registerInfer("discoverTs2KtExecutable") {
+    private fun Project.addDiscoverTask(ext: Ts2ktUnofficialExtension): TaskProvider<DiscoverTs2ktExecutable> {
+        return project.tasks.registerInfer("discoverTs2ktExecutable") {
             description = "Finds the `ts2kt` executable and saves it for other tasks."
             group = "discovery"
 
             ts2ktVersionProperty.set(ext.ts2ktVersionProperty)
-            ts2KtProvidedExecutableProperty.set(ext.ts2KtExecutableProperty)
+            ts2ktProvidedExecutableProperty.set(ext.ts2ktExecutableProperty)
         }
     }
 

@@ -3,12 +3,12 @@ An **unofficial** Gradle plugin for [ts2kt].
 
 Example (Kotlin DSL):
 ```kotlin
-configure<Ts2KtUnofficialExtension> {
+configure<Ts2ktUnofficialExtension> {
     dependencies {
-        // request NPM package `@types/jquery` (for separately packaged types):
-        definitelyTyped("jquery")
-        // request NPM package `react` (for types in packages):
-        npm("react")
+        // request NPM package `@types/jquery@3.3.6`:
+        "ts2ktUnofficial"("types", "jquery", "3.3.6")
+        // request NPM package `react@16.5.1`:
+        "ts2ktUnofficial"("", "react", "16.5.1")
     }
 }
 ```
@@ -27,14 +27,6 @@ It will either use the locally installed version (`./node_modules/`)
 
 You can configure the version of `ts2kt` used by default by setting
 `ts2ktUnofficial.ts2ktVersion`.
-
-## Future plans
-
-It would be nice to leverage Gradle's repository system, rather than
-hacking out the dependency objects and resolving it totally differently.
-The current pattern leaves an unresolveable configuration that can't be
-used normally.
-
 
 [ts2kt]: https://github.com/Kotlin/ts2kt
 [Gradle Plugin Portal]: https://plugins.gradle.org

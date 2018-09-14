@@ -32,7 +32,7 @@ gradlePlugin {
     plugins {
         register("ts2kt-unofficial-gradle-plugin") {
             id = "ts2kt-unofficial-gradle-plugin"
-            implementationClass = "net.octyl.ts2kt.gradle.Ts2KtUnofficialPlugin"
+            implementationClass = "net.octyl.ts2kt.gradle.Ts2ktUnofficialPlugin"
         }
     }
 }

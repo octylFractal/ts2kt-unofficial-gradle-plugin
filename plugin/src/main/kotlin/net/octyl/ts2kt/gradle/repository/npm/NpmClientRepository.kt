@@ -37,15 +37,15 @@ import io.ktor.util.cio.writeChannel
 import kotlinx.coroutines.experimental.io.copyTo
 import kotlinx.coroutines.experimental.runBlocking
 import net.octyl.ts2kt.gradle.repository.ResolutionResult
-import net.octyl.ts2kt.gradle.repository.TsRepository
+import net.octyl.ts2kt.gradle.repository.ClientRepository
+import net.octyl.ts2kt.gradle.repository.dependency.ClientDependency
+import net.octyl.ts2kt.gradle.repository.dependency.ExternalClientDependency
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Dependency
-import org.gradle.api.artifacts.ExternalModuleDependency
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 
-class NpmTsRepository(private val project: Project) : TsRepository {
+class NpmClientRepository(private val project: Project) : ClientRepository {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -70,16 +70,15 @@ class NpmTsRepository(private val project: Project) : TsRepository {
     private val client = HttpClient(Apache) {
     }
 
-    override fun resolveDependency(dependency: Dependency): ResolutionResult {
+    override fun resolveDependency(dependency: ClientDependency): ResolutionResult {
         return when {
-            (dependency is ExternalModuleDependency
-                    && !dependency.isChanging
+            (dependency is ExternalClientDependency
                     && dependency.version != null) -> runBlocking { doResolve(dependency) }
             else -> ResolutionResult.NotFound()
         }
     }
 
-    private suspend fun doResolve(dependency: ExternalModuleDependency): ResolutionResult {
+    private suspend fun doResolve(dependency: ExternalClientDependency): ResolutionResult {
         val resolveInfo = dependency.resolveInfo(cacheDirectory, registryUrl)
 
         if (!resolveInfo.downloadTarget.exists()) {
@@ -110,19 +109,17 @@ class NpmTsRepository(private val project: Project) : TsRepository {
         return ResolutionResult.Success(files, dependencies)
     }
 
-    private fun PartialPackageInfo.getGradleDependencies(): List<Dependency> {
+    private fun PartialPackageInfo.getGradleDependencies(): List<ClientDependency> {
         return getDependenciesWithDirectVersions()
                 .map { (name, version) ->
-                    val dependency = mutableMapOf(
-                            "name" to name,
-                            "version" to version
-                    )
+                    var group: String? = null
+                    var nameFixed = name
                     if (name.firstOrNull() == '@') {
                         val (g, n) = name.substring(1).split("/")
-                        dependency["group"] = g
-                        dependency["name"] = n
+                        group = g
+                        nameFixed = n
                     }
-                    project.dependencies.create(dependency)
+                    ExternalClientDependency(group, nameFixed, version)
                 }
     }
 

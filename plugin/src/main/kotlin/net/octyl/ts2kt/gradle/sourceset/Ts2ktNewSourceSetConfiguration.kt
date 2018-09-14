@@ -24,62 +24,47 @@
  */
 package net.octyl.ts2kt.gradle.sourceset
 
-import net.octyl.ts2kt.gradle.repository.npm.NpmTsRepository
+import net.octyl.ts2kt.gradle.Ts2ktUnofficialExtension
+import net.octyl.ts2kt.gradle.repository.configuration.ClientConfiguration
 import net.octyl.ts2kt.gradle.tasks.ConvertTypescriptToKotlin
 import net.octyl.ts2kt.gradle.tasks.DiscoverTs2ktExecutable
-import net.octyl.ts2kt.gradle.tasks.ResolveTypescriptDependencies
 import net.octyl.ts2kt.gradle.util.registerInfer
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.internal.HasConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.getPluginByName
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import java.util.concurrent.Callable
 
-class Ts2KtNewSourceSetConfiguration(
+class Ts2ktNewSourceSetConfiguration(
         private val project: Project,
         private val discoverTaskProvider: TaskProvider<DiscoverTs2ktExecutable>,
         private val sourceSet: SourceSet) {
 
     fun configure() {
         val configuration = addConfiguration()
-        val resolveTask = addResolveTask(configuration)
-        addConversionTask(resolveTask)
+        addConversionTask(configuration)
     }
 
-    private fun addConfiguration(): Configuration {
-        return project.configurations.create(sourceSet.configurationName("ts2ktUnofficial"))
-                .apply {
-                    isVisible = false
-                    description = "TypeScript dependencies to be converted to Kotlin " +
-                            "of source set `${sourceSet.name}`."
-                }
+    private fun addConfiguration(): ClientConfiguration {
+        val ext = project.extensions.getByType<Ts2ktUnofficialExtension>()
+
+        return ext.getOrCreateClientConfiguration(sourceSet.configurationName("ts2ktUnofficial"))
     }
 
-    private fun addResolveTask(configuration: Configuration): TaskProvider<ResolveTypescriptDependencies> {
-        val taskName = sourceSet.getTaskName("resolve", "TypescriptDependencies")
-        return project.tasks.registerInfer(taskName) {
-            description = "Resolves dependencies of the ${configuration.name} configuration."
-            group = "resolution"
-
-            configurationProperty.set(configuration)
-            repository(NpmTsRepository(project))
-        }
-    }
-
-    private fun addConversionTask(resolveTaskProvider: TaskProvider<ResolveTypescriptDependencies>): TaskProvider<ConvertTypescriptToKotlin> {
+    private fun addConversionTask(configuration: ClientConfiguration): TaskProvider<ConvertTypescriptToKotlin> {
         val taskName = sourceSet.getTaskName("convert", "TypescriptToKotlin")
         return project.tasks.registerInfer(taskName) {
             description = "Converts Typescript files in source set ${sourceSet.name} to Kotlin."
 
-            val resolveTask = resolveTaskProvider.get()
             val discoverTask = discoverTaskProvider.get()
 
-            ts2ktScriptProperty.set(discoverTask.ts2KtScriptProperty)
-            typescriptFilesProperty.setFrom(resolveTask.outputFiles)
+            ts2ktScriptProperty.set(discoverTask.ts2ktScriptProperty)
+            typescriptFilesProperty.setFrom(Callable { configuration.allFiles })
             outputDirectoryProperty.set(project.layout.buildDirectory.dir("generated/source/ts2kt/${sourceSet.name}/"))
 
             // Add output to equivalent Kotlin source set.

@@ -1,0 +1,67 @@
+package net.octyl.ts2kt.gradle.repository.configuration
+
+import net.octyl.ts2kt.gradle.repository.ClientRepository
+import net.octyl.ts2kt.gradle.repository.ResolutionResult
+import net.octyl.ts2kt.gradle.repository.dependency.ClientDependency
+import net.octyl.ts2kt.gradle.util.ensureExhausted
+import org.apache.log4j.Logger
+import org.gradle.api.Project
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.SetProperty
+import java.util.LinkedList
+
+class ClientConfiguration(val name: String,
+                          private val project: Project,
+                          private val repositories: SetProperty<ClientRepository>) {
+
+    private val logger = Logger.getLogger(javaClass)
+
+    val dependencies = mutableSetOf<ClientDependency>()
+
+    val allFiles: FileCollection by lazy {
+        val deps = project.files()
+
+        val remainingDependencies = LinkedList(dependencies)
+        val processedDependencies = mutableSetOf<ClientDependency>()
+
+        while (remainingDependencies.isNotEmpty()) {
+            val next = remainingDependencies.pollFirst()!!
+
+            val transDeps = resolveDependency(next, deps)
+
+            processedDependencies.add(next)
+
+            remainingDependencies += HashSet(transDeps).apply {
+                removeIf(processedDependencies::contains)
+            }
+        }
+
+        return@lazy deps
+    }
+
+    private fun resolveDependency(dep: ClientDependency,
+                                  outputFiles: ConfigurableFileCollection): List<ClientDependency> {
+        val errors = mutableListOf<ResolutionResult.NotFound>()
+        for (repo in repositories.get()) {
+            val resolved = repo.resolveDependency(dep)
+            ensureExhausted(when (resolved) {
+                is ResolutionResult.Success -> {
+                    outputFiles.from(resolved.files)
+                    return resolved.dependencies
+                }
+                is ResolutionResult.NotFound -> errors.add(resolved)
+            })
+        }
+
+        // Throw errors on failure, with associated information in info logs.
+        errors.forEach { res ->
+            if (res.error != null) {
+                logger.info("Resolution error for `$dep`:", res.error)
+            }
+        }
+        throw IllegalStateException("Unable to resolve dependency `$dep`." +
+                "Run with --info for more information.")
+    }
+
+}

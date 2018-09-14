@@ -40,7 +40,7 @@ object TestKitAssist {
 
 }
 
-fun GradleRunner.withTs2KtPluginClasspath(): GradleRunner {
+fun GradleRunner.withTs2ktPluginClasspath(): GradleRunner {
     withPluginClasspath(TestKitAssist.files)
     return this
 }

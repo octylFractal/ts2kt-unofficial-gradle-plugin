@@ -25,7 +25,6 @@
 package net.octyl.ts2kt.gradle.util
 
 import org.gradle.api.Action
-import org.gradle.api.DefaultTask
 import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
@@ -35,6 +34,7 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import kotlin.reflect.KProperty
@@ -54,12 +54,20 @@ val <T> Property<T>.field
     get() = PropertyField(this)
 
 class ListPropertyField<T>(private val property: ListProperty<T>) {
-    operator fun getValue(thisRef: Any?, property: KProperty<*>) = this.property.get()
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): MutableList<T> = this.property.get()
     operator fun setValue(thisRef: Any?, property: KProperty<*>, value: List<T>) = this.property.set(value)
 }
 
 val <T> ListProperty<T>.field
     get() = ListPropertyField(this)
+
+class SetPropertyField<T>(private val property: SetProperty<T>) {
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): MutableSet<T> = this.property.get()
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Set<T>) = this.property.set(value)
+}
+
+val <T> SetProperty<T>.field
+    get() = SetPropertyField(this)
 
 class ConfigurableFileCollectionField(
         private val configurableFileCollection: ConfigurableFileCollection) {

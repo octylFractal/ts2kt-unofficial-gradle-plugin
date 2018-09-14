@@ -48,12 +48,12 @@ open class DiscoverTs2ktExecutable : KotlinDefaultTask() {
 
     @get:Input
     @get:Optional
-    val ts2KtProvidedExecutableProperty = project.layout.fileProperty()
+    val ts2ktProvidedExecutableProperty = project.layout.fileProperty()
     /**
      * A hard-coded executable path to use. Avoids lookup if this is set and exists.
      */
     @get:Internal
-    var ts2KtProvidedExecutable by ts2KtProvidedExecutableProperty.field
+    var ts2ktProvidedExecutable by ts2ktProvidedExecutableProperty.field
 
     /**
      * Path for searching for executables.
@@ -65,18 +65,18 @@ open class DiscoverTs2ktExecutable : KotlinDefaultTask() {
 
     @Suppress("LeakingThis")
     @get:OutputFile
-    val ts2KtScriptProperty = newOutputFile().apply {
+    val ts2ktScriptProperty = newOutputFile().apply {
         set(project.layout.ts2ktUnofficialDirectory.file("ts2kt.sh"))
     }
     /**
      * Script that, when run, will call `ts2kt`.
      */
     @get:Internal
-    var ts2KtScript by ts2KtScriptProperty.field
+    var ts2ktScript by ts2ktScriptProperty.field
 
     @TaskAction
     fun discover() {
-        val scriptFile = ts2KtScriptProperty.asFile.get()
+        val scriptFile = ts2ktScriptProperty.asFile.get()
         if (!scriptFile.parentFile.mkdirs() && !scriptFile.parentFile.exists()) {
             throw IllegalStateException("Could not create `${scriptFile.parentFile.canonicalPath}`.")
         }
@@ -89,14 +89,14 @@ open class DiscoverTs2ktExecutable : KotlinDefaultTask() {
 
         scriptFile.writeText("""
             |#!/usr/bin/env sh
-            |${ts2KtInvocation()} "$@"
+            |${ts2ktInvocation()} "$@"
             """.trimMargin("|"))
     }
 
-    fun ts2KtInvocation(): String {
-        val ts2KtInstalled = ts2KtProvidedExecutableProperty.asFile.orNull ?: findPath.find("ts2kt")
-        if (ts2KtInstalled != null && ts2KtInstalled.canExecute()) {
-            return ts2KtInstalled.canonicalPath
+    private fun ts2ktInvocation(): String {
+        val ts2ktInstalled = ts2ktProvidedExecutableProperty.asFile.orNull ?: findPath.find("ts2kt")
+        if (ts2ktInstalled != null && ts2ktInstalled.canExecute()) {
+            return ts2ktInstalled.canonicalPath
         }
 
         findPath.find("npx")

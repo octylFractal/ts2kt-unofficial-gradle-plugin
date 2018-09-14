@@ -28,7 +28,6 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.BeforeClass
-import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import java.io.File
 import kotlin.test.BeforeTest
@@ -39,7 +38,7 @@ import kotlin.test.assertEquals
  * Tests for some simple real-world examples.
  */
 class RealExampleTest {
-//    @Rule
+    //    @Rule
     @JvmField
     val testProjectDir = TemporaryFolder()
 
@@ -49,7 +48,7 @@ class RealExampleTest {
         @BeforeClass
         @JvmStatic
         fun cleanupRepositoryCaches() {
-            cleanTs2KtRepositoryCaches()
+            cleanTs2ktRepositoryCaches()
         }
     }
 
@@ -75,7 +74,7 @@ class RealExampleTest {
     private fun runGradle(configBlock: GradleRunner.() -> Unit): BuildResult {
         return GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withTs2KtPluginClasspath()
+                .withTs2ktPluginClasspath()
                 .apply(configBlock)
                 .build()
     }
@@ -83,8 +82,10 @@ class RealExampleTest {
     @Test
     fun generateAdd2HomeStubs() {
         buildFileWithPlugins("""
-            dependencies {
-                "ts2ktUnofficial"("types:add2home:2.0.29")
+            ts2ktUnofficial {
+                dependencies {
+                    "ts2ktUnofficial"("types:add2home:2.0.29")
+                }
             }
 
             val getStub by tasks.registering(Copy::class) {
