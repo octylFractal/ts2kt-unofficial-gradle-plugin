@@ -28,8 +28,10 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.nio.file.Files
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -38,7 +40,7 @@ import kotlin.test.assertEquals
  * Tests for some simple real-world examples.
  */
 class RealExampleTest {
-    //    @Rule
+    @Rule
     @JvmField
     val testProjectDir = TemporaryFolder()
 
@@ -54,7 +56,6 @@ class RealExampleTest {
 
     @BeforeTest
     fun initialize() {
-        testProjectDir.create()
         buildFile = testProjectDir.newFile("build.gradle.kts")!!
     }
 
@@ -99,6 +100,13 @@ class RealExampleTest {
 
         println(result.output)
         assertEquals(TaskOutcome.SUCCESS, result.task(":getStub")!!.outcome)
+        assertEquals(1, countFiles(testProjectDir.root.resolve("build/kt-stubs")))
+    }
+
+    private fun countFiles(dir: File): Long {
+        return Files.walk(dir.toPath())
+                .filter { Files.isRegularFile(it) }
+                .count()
     }
 
 }
