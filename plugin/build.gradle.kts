@@ -49,6 +49,7 @@ pluginBundle {
 
     plugins {
         create("ts2kt-unofficial") {
+            id = "ts2kt-unofficial"
             displayName = "Typescript to Kotlin Gradle Plugin"
         }
     }
