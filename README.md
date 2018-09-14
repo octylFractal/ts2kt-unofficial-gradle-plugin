@@ -21,12 +21,12 @@ developed.
 The plugin is available on the [Gradle Plugin Portal]. Installation
 instructions are available there.
 
-The plugin uses `npx` to run `ts2kt` if it isn't on the path.
-It will either use the locally installed version (`./node_modules/`)
+The plugin uses `npx` to run `ts2kt` if `ts2kt` isn't on the path.
+`npx` will either use the locally installed version (`./node_modules/`)
  or a version specified by the plugin.
 
-You can configure the version of `ts2kt` used by default by setting
-`ts2ktUnofficial.ts2ktVersion`.
+You can configure the version of `ts2kt` used when running it through `npx`
+ by setting `ts2ktUnofficial.ts2ktVersion`.
 
 [ts2kt]: https://github.com/Kotlin/ts2kt
 [Gradle Plugin Portal]: https://plugins.gradle.org/plugin/net.octyl.ts2kt-unofficial
