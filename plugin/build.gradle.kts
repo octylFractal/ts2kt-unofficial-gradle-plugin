@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("com.techshroom.incise-blue") version "0.0.12"
     id("net.researchgate.release") version "2.7.0"
+    id("com.gradle.plugin-publish") version "0.10.0"
     `java-gradle-plugin`
     `kotlin-dsl`
     kotlin("jvm") version embeddedKotlinVersion
@@ -35,6 +36,20 @@ gradlePlugin {
         register("ts2kt-unofficial-gradle-plugin") {
             id = "ts2kt-unofficial-gradle-plugin"
             implementationClass = "net.octyl.ts2kt.gradle.Ts2ktUnofficialPlugin"
+        }
+    }
+}
+
+pluginBundle {
+    website = "https://github.com/kenzierocks/ts2kt-unofficial-gradle-plugin"
+    vcsUrl = website
+
+    description = "An unofficial plugin for running `ts2kt` on NPM dependencies."
+    tags = listOf("ts2kt", "typescript", "kotlin")
+
+    plugins {
+        create("ts2kt-unofficial") {
+            displayName = "Typescript to Kotlin Gradle Plugin"
         }
     }
 }
