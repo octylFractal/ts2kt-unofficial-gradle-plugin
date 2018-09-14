@@ -33,8 +33,8 @@ tasks.withType<KotlinJvmCompile> {
 
 gradlePlugin {
     plugins {
-        register("ts2kt-unofficial-gradle-plugin") {
-            id = "ts2kt-unofficial-gradle-plugin"
+        register("ts2kt-unofficial") {
+            id = "${project.group}.ts2kt-unofficial"
             implementationClass = "net.octyl.ts2kt.gradle.Ts2ktUnofficialPlugin"
         }
     }
@@ -48,8 +48,7 @@ pluginBundle {
     tags = listOf("ts2kt", "typescript", "kotlin")
 
     plugins {
-        create("ts2kt-unofficial") {
-            id = "ts2kt-unofficial"
+        getByName("ts2kt-unofficial") {
             displayName = "Typescript to Kotlin Gradle Plugin"
         }
     }

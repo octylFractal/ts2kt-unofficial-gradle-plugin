@@ -63,7 +63,7 @@ class RealExampleTest {
         buildFile.writeText("""
             plugins {
                 kotlin("jvm") version embeddedKotlinVersion
-                id("ts2kt-unofficial-gradle-plugin")
+                id("net.octyl.ts2kt-unofficial")
             }
 
             repositories {
