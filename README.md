@@ -29,4 +29,4 @@ You can configure the version of `ts2kt` used by default by setting
 `ts2ktUnofficial.ts2ktVersion`.
 
 [ts2kt]: https://github.com/Kotlin/ts2kt
-[Gradle Plugin Portal]: https://plugins.gradle.org
+[Gradle Plugin Portal]: https://plugins.gradle.org/plugin/net.octyl.ts2kt-unofficial
