@@ -1,4 +1,5 @@
 import com.techshroom.inciseblue.InciseBluePluginApplication
+import net.researchgate.release.ReleaseExtension
 import nl.javadude.gradle.plugins.license.DownloadLicensesExtension.license
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
@@ -38,6 +39,9 @@ gradlePlugin {
     }
 }
 
+configure<ReleaseExtension> {
+    versionPropertyFile = rootProject.file("gradle.properties").canonicalPath
+}
 tasks.named("afterReleaseBuild").configure {
     dependsOn("publishPlugins")
 }
