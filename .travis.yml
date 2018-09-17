@@ -1,5 +1,7 @@
 language: java
 script: "./gradlew build -s"
+env:
+- GRADLE_OPTS=-Dorg.gradle.console=plain
 jdk:
 - oraclejdk8
 - openjdk10
