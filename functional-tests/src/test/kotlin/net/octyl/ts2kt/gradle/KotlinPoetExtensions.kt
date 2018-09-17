@@ -1,5 +1,5 @@
 /*
- * This file is part of plugin, licensed under the MIT License (MIT).
+ * This file is part of functional-tests, licensed under the MIT License (MIT).
  *
  * Copyright (c) Kenzie Togami <https://octyl.net>
  * Copyright (c) contributors
@@ -22,10 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.octyl.ts2kt.gradle.util
+package net.octyl.ts2kt.gradle
 
-// Ensure when() statements are exhausted by using them as expressions.
-// Uses inline to optimize the function call away.
-@Suppress("NOTHING_TO_INLINE")
-inline fun ensureExhausted(@Suppress("UNUSED_PARAMETER") whenExpr: Any?) {
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+
+inline fun FileSpec.Builder.`fun`(name: String, builderBlock: FunSpec.Builder.() -> Unit) {
+    addFunction(FunSpec.builder(name).apply(builderBlock).build())
 }

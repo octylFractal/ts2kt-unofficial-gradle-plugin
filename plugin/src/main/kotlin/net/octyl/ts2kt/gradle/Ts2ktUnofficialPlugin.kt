@@ -37,7 +37,7 @@ import org.gradle.kotlin.dsl.getByType
 
 class Ts2ktUnofficialPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        if (!project.plugins.hasPlugin("kotlin")) {
+        if (!project.plugins.hasPlugin("kotlin2js")) {
             // We don't configure anything in this case.
             // We also don't apply kotlin ourselves, as
             // it would be weird -- your only (visible)

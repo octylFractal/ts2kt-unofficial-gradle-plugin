@@ -36,8 +36,8 @@ import io.ktor.http.HttpMethod
 import io.ktor.util.cio.writeChannel
 import kotlinx.coroutines.experimental.io.copyTo
 import kotlinx.coroutines.experimental.runBlocking
-import net.octyl.ts2kt.gradle.repository.ResolutionResult
 import net.octyl.ts2kt.gradle.repository.ClientRepository
+import net.octyl.ts2kt.gradle.repository.ResolutionResult
 import net.octyl.ts2kt.gradle.repository.dependency.ClientDependency
 import net.octyl.ts2kt.gradle.repository.dependency.ExternalClientDependency
 import org.gradle.api.Project
@@ -64,7 +64,9 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
             standardOutput = cap
         }
 
-        cap.toString(StandardCharsets.UTF_8.name()).trim()
+        cap.toString(StandardCharsets.UTF_8.name())
+                .trim()
+                .trimEnd('/')
     }
 
     private val client = HttpClient(Apache) {
@@ -130,7 +132,7 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
         }
         when (call.response.status.value) {
             in 200..299 -> Unit
-            404, 405 -> return ResolutionResult.NotFound()
+            404, 405 -> return ResolutionResult.NotFound(NoSuchElementException(call.request.url.toString()))
             in 500..599 -> return ResolutionResult.NotFound(RuntimeException(call.response.readText()))
         }
 
@@ -155,6 +157,10 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
                 into(unpackTarget)
             }
         }
+    }
+
+    override fun toString(): String {
+        return "${javaClass.simpleName}[registry=$registryUrl]"
     }
 
 }

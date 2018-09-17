@@ -53,8 +53,13 @@ internal data class DependencyResolveInfo(val owner: ClientDependency,
 }
 
 internal fun ClientDependency.resolveInfo(cacheDirectory: File, registryUrl: String): DependencyResolveInfo {
-    val groupCacheDir = cacheDirectory.resolve("./$group")
-    val dependencyUrl = "$registryUrl/@$group/$name/-/$name-$version.tgz"
+    val internalGroup = group ?: "ts2kt-default-group"
+    val groupCacheDir = cacheDirectory.resolve("./$internalGroup")
+    val repoName = when (group) {
+        null -> name
+        else -> "@$group/$name"
+    }
+    val dependencyUrl = "$registryUrl/$repoName/-/$name-$version.tgz"
 
     if (!groupCacheDir.mkdirs() && !groupCacheDir.exists()) {
         throw IllegalStateException("Cannot create directory `${groupCacheDir.canonicalPath}`.")

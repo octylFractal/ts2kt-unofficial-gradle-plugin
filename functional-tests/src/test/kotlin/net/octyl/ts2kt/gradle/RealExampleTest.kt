@@ -24,6 +24,7 @@
  */
 package net.octyl.ts2kt.gradle
 
+import com.squareup.kotlinpoet.ClassName
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
@@ -61,13 +62,25 @@ class RealExampleTest {
 
     private fun buildFileWithPlugins(moreText: String) {
         buildFile.writeText("""
+            buildscript {
+                repositories {
+                    jcenter()
+                }
+                dependencies {
+                    "classpath"("org.jetbrains.kotlin:kotlin-gradle-plugin:${'$'}embeddedKotlinVersion")
+                }
+            }
             plugins {
-                kotlin("jvm") version embeddedKotlinVersion
+                id("kotlin2js")
                 id("net.octyl.ts2kt-unofficial")
             }
 
             repositories {
                 jcenter()
+            }
+
+            dependencies {
+                "compile"(kotlin("stdlib-js"))
             }
         """.trimIndent() + "\n" + moreText)
     }
@@ -98,7 +111,6 @@ class RealExampleTest {
             withArguments("getStub", "-S")
         }
 
-        println(result.output)
         assertEquals(TaskOutcome.SUCCESS, result.task(":getStub")!!.outcome)
         assertEquals(1, countFiles(testProjectDir.root.resolve("build/kt-stubs")))
     }
@@ -107,6 +119,40 @@ class RealExampleTest {
         return Files.walk(dir.toPath())
                 .filter { Files.isRegularFile(it) }
                 .count()
+    }
+
+    @Test
+    fun testBigIntStubs() {
+        buildFileWithPlugins("""
+            configure<${Ts2ktUnofficialExtension::class.java.name}> {
+                dependencies {
+                    "ts2ktUnofficial"(":big-integer:1.6.36")
+                }
+            }
+        """.trimIndent())
+
+        // types for the code below:
+        @Suppress("LocalVariableName")
+        val BigInteger = ClassName.bestGuess("bigInt.BigInteger")
+
+        testProjectDir.writeSrcFile(
+                "TestBigIntStubs",
+                weirdImports = setOf("bigInt")) {
+            `fun`("add5ToInput") {
+                addParameter("input", Int::class)
+                returns(BigInteger)
+                addCode("""
+                        |val inputBigInt = bigInt(input)
+                        |return inputBigInt.add(5)
+                        """.trimMargin())
+            }
+        }
+
+        val result = runGradle {
+            withArguments("build", "-S")
+        }
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":build")!!.outcome)
     }
 
 }

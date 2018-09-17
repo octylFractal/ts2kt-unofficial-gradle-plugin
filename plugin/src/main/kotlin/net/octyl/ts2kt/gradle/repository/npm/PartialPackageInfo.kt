@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import java.util.regex.Pattern
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class PartialPackageInfo(val dependencies: Map<String, String>) {
+data class PartialPackageInfo(val dependencies: Map<String, String>?) {
     companion object {
         // Consider any series of dots & numbers to be a version
         private val DIRECT_VERISON_PATTERN = Pattern.compile("[0-9.]+")
@@ -41,14 +41,13 @@ data class PartialPackageInfo(val dependencies: Map<String, String>) {
      * but we just want the first valid version for now.
      */
     fun getDependenciesWithDirectVersions(): Map<String, String> {
-        return dependencies
-                .mapValues { (name, version) ->
-                    val matcher = DIRECT_VERISON_PATTERN.matcher(version)
+        return dependencies?.mapValues { (name, version) ->
+            val matcher = DIRECT_VERISON_PATTERN.matcher(version)
 
-                    when (matcher.find()) {
-                        true -> matcher.group(0)
-                        false -> throw IllegalStateException("No version found for dependency `$name`: `$version`")
-                    }
-                }
+            when (matcher.find()) {
+                true -> matcher.group(0)
+                false -> throw IllegalStateException("No version found for dependency `$name`: `$version`")
+            }
+        } ?: mapOf()
     }
 }

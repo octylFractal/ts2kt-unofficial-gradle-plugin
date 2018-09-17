@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package net.octyl.ts2kt.gradle.sourceset
 
 import net.octyl.ts2kt.gradle.Ts2ktUnofficialExtension
@@ -31,13 +32,12 @@ import net.octyl.ts2kt.gradle.tasks.DiscoverTs2ktExecutable
 import net.octyl.ts2kt.gradle.util.registerInfer
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.internal.HasConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.getPluginByName
+import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.ide.idea.model.IdeaModel
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.util.concurrent.Callable
 
 class Ts2ktNewSourceSetConfiguration(
@@ -58,7 +58,7 @@ class Ts2ktNewSourceSetConfiguration(
 
     private fun addConversionTask(configuration: ClientConfiguration): TaskProvider<ConvertTypescriptToKotlin> {
         val taskName = sourceSet.getTaskName("convert", "TypescriptToKotlin")
-        return project.tasks.registerInfer(taskName) {
+        return project.tasks.registerInfer<ConvertTypescriptToKotlin>(taskName) {
             description = "Converts Typescript files in source set ${sourceSet.name} to Kotlin."
 
             val discoverTask = discoverTaskProvider.get()
@@ -67,12 +67,16 @@ class Ts2ktNewSourceSetConfiguration(
             typescriptFilesProperty.setFrom(Callable { configuration.allFiles })
             outputDirectoryProperty.set(project.layout.buildDirectory.dir("generated/source/ts2kt/${sourceSet.name}/"))
 
-            // Add output to equivalent Kotlin source set.
-            // I don't really like using the internal API here, but Kotlin does...
-            val kotlinSourceSet = (sourceSet as HasConvention).convention.getPluginByName<KotlinSourceSet>("kotlin")
-            kotlinSourceSet.kotlin.srcDir(outputDirectoryProperty)
-
             addToIntellijGeneratedSources(outputDirectoryProperty)
+        }.also { task ->
+            project.tasks
+                    .withType<Kotlin2JsCompile>()
+                    .named(sourceSet.getTaskName("compile", "Kotlin2Js"))
+                    .configure {
+                        val convTask = task.get()
+                        source(convTask)
+                        dependsOn(convTask)
+                    }
         }
     }
 

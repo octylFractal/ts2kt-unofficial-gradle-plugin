@@ -33,6 +33,8 @@ import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.SetProperty
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.LinkedList
 
 class ClientConfiguration(val name: String,
@@ -66,7 +68,7 @@ class ClientConfiguration(val name: String,
 
     private fun resolveDependency(dep: ClientDependency,
                                   outputFiles: ConfigurableFileCollection): List<ClientDependency> {
-        val errors = mutableListOf<ResolutionResult.NotFound>()
+        val errors = LinkedHashMap<ClientRepository, ResolutionResult.NotFound>()
         for (repo in repositories.get()) {
             val resolved = repo.resolveDependency(dep)
             ensureExhausted(when (resolved) {
@@ -74,18 +76,25 @@ class ClientConfiguration(val name: String,
                     outputFiles.from(resolved.files)
                     return resolved.dependencies
                 }
-                is ResolutionResult.NotFound -> errors.add(resolved)
+                is ResolutionResult.NotFound -> errors.put(repo, resolved)
             })
         }
 
         // Throw errors on failure, with associated information in info logs.
-        errors.forEach { res ->
-            if (res.error != null) {
-                logger.info("Resolution error for `$dep`:", res.error)
+        errors.forEach { repo, res ->
+            when (res.error) {
+                null -> logger.warn("$repo: Could not find `$dep`.")
+                else -> {
+                    val stack = StringWriter()
+                            .use {
+                                res.error.printStackTrace(PrintWriter(it, true))
+                                it.toString()
+                            }
+                    logger.warn("$repo: Resolution error for `$dep`: $stack")
+                }
             }
         }
-        throw IllegalStateException("Unable to resolve dependency `$dep`." +
-                "Run with --info for more information.")
+        throw IllegalStateException("Unable to resolve dependency `$dep`.")
     }
 
 }

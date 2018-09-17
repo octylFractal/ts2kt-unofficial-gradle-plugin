@@ -37,7 +37,7 @@ repositories {
     }
 }
 
-val sourceSetMain = sourceSets["main"]
+val sourceSetMain = sourceSets["main"]!!
 
 dependencies {
     implementation(project(":plugin"))
@@ -46,6 +46,7 @@ dependencies {
     testImplementation(gradleTestKit())
     testImplementation(group = "junit", name = "junit", version = "4.12")
     testImplementation(embeddedKotlin("test-junit"))
+    testImplementation(group = "com.squareup", name = "kotlinpoet", version = "1.0.0-RC1")
 }
 
 val createClasspathManifest by tasks.registering {
