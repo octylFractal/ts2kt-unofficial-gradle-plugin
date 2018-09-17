@@ -1,6 +1,9 @@
 # ts2kt-unofficial-gradle-plugin
 An **unofficial** Gradle plugin for [ts2kt].
 
+[![Gradle Plugin Portal][GPPBadge]][Gradle Plugin Portal]
+[![Build Status][TCIBadge]][Travis CI]
+
 Example (Kotlin DSL):
 ```kotlin
 configure<Ts2ktUnofficialExtension> {
@@ -30,3 +33,6 @@ You can configure the version of `ts2kt` used when running it through `npx`
 
 [ts2kt]: https://github.com/Kotlin/ts2kt
 [Gradle Plugin Portal]: https://plugins.gradle.org/plugin/net.octyl.ts2kt-unofficial
+[GPPBadge]: https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/net/octyl/ts2kt-unofficial/net.octyl.ts2kt-unofficial.gradle.plugin/maven-metadata.xml.svg?label=Gradle%20Plugin%20Portal
+[Travis CI]: https://travis-ci.com/kenzierocks/ts2kt-unofficial-gradle-plugin
+[TCIBadge]: https://travis-ci.com/kenzierocks/ts2kt-unofficial-gradle-plugin.svg?branch=master
