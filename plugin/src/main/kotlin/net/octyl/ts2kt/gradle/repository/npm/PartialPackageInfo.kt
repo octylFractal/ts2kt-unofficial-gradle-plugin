@@ -25,13 +25,14 @@
 package net.octyl.ts2kt.gradle.repository.npm
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import java.util.regex.Pattern
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PartialPackageInfo(val dependencies: Map<String, String>?) {
     companion object {
-        // Consider any series of dots & numbers to be a version
-        private val DIRECT_VERISON_PATTERN = Pattern.compile("[0-9.]+")
+        // Versions can be modified in package.json using these strings, so toss them:
+        private val VERSION_MODIFIERS = setOf(
+                "<=", ">="
+        ) + "~<>^".asIterable().map { String(charArrayOf(it)) }
     }
 
     /**
@@ -41,13 +42,14 @@ data class PartialPackageInfo(val dependencies: Map<String, String>?) {
      * but we just want the first valid version for now.
      */
     fun getDependenciesWithDirectVersions(): Map<String, String> {
-        return dependencies?.mapValues { (name, version) ->
-            val matcher = DIRECT_VERISON_PATTERN.matcher(version)
-
-            when (matcher.find()) {
-                true -> matcher.group(0)
-                false -> throw IllegalStateException("No version found for dependency `$name`: `$version`")
+        return dependencies?.mapValues { (_, version) ->
+            val versionPrefix = VERSION_MODIFIERS.firstOrNull {
+                version.startsWith(it)
             }
+            val startOfVersion = (versionPrefix ?: "").length
+
+            version.substring(startOfVersion)
         } ?: mapOf()
     }
+
 }

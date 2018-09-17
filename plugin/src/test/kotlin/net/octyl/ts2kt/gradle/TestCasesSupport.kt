@@ -22,18 +22,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.octyl.ts2kt.gradle.repository.dependency
+package net.octyl.ts2kt.gradle
 
-import net.octyl.ts2kt.gradle.Ts2ktUnofficialExtension
+import kotlin.test.assertEquals
 
-class ClientDependencyHandlerScope(private val extension: Ts2ktUnofficialExtension) {
+typealias Generator<I, R> = (I) -> R
 
-    private fun String.addDependency(dependency: ExternalClientDependency) =
-            dependency.also { extension.getClientConfiguration(this).dependencies.add(it) }
+fun <I, R> verify(test: Generator<I, R>, inputs: TestInputs<I, R>.() -> Unit) {
+    TestInputs(test).inputs()
+}
 
-    operator fun String.invoke(dependencyNotation: Any) =
-            addDependency(DependencyFactory.createFromAnyNotation(dependencyNotation))
+class TestInputs<out I, R>(@PublishedApi internal val test: Generator<@UnsafeVariance I, R>) {
 
-    operator fun String.invoke(group: String?, name: String, version: String? = null) =
-            addDependency(DependencyFactory.createDependency(group, name, version))
+    inline fun <reified EX : Exception> failsWith(input: @UnsafeVariance I,
+                                                  exceptionAssertions: (EX) -> Unit = {}) {
+        try {
+            test(input)
+        } catch (ex: Exception) {
+            when (ex) {
+                is EX -> exceptionAssertions(ex)
+                else -> assertEquals(EX::class.java, ex.javaClass,
+                        "Wrong exception for input `$input`")
+            }
+        }
+    }
+
+
+    fun converts(pair: Pair<@UnsafeVariance I, R>) {
+        val (input, result) = pair
+        val actual = test(input)
+        assertEquals(result, actual, "Wrong output for input `$input`")
+    }
+
 }

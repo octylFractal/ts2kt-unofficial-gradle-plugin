@@ -60,31 +60,6 @@ class RealExampleTest {
         buildFile = testProjectDir.newFile("build.gradle.kts")!!
     }
 
-    private fun buildFileWithPlugins(moreText: String) {
-        buildFile.writeText("""
-            buildscript {
-                repositories {
-                    jcenter()
-                }
-                dependencies {
-                    "classpath"("org.jetbrains.kotlin:kotlin-gradle-plugin:${'$'}embeddedKotlinVersion")
-                }
-            }
-            plugins {
-                id("kotlin2js")
-                id("net.octyl.ts2kt-unofficial")
-            }
-
-            repositories {
-                jcenter()
-            }
-
-            dependencies {
-                "compile"(kotlin("stdlib-js"))
-            }
-        """.trimIndent() + "\n" + moreText)
-    }
-
     private fun runGradle(configBlock: GradleRunner.() -> Unit): BuildResult {
         return GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
@@ -95,10 +70,10 @@ class RealExampleTest {
 
     @Test
     fun generateAdd2HomeStubs() {
-        buildFileWithPlugins("""
+        buildFile.writeGradleSetupAnd("""
             ts2ktUnofficial {
                 dependencies {
-                    "ts2ktUnofficial"("types:add2home:2.0.29")
+                    "ts2ktUnofficial"("@types/add2home@2.0.29")
                 }
             }
 
@@ -123,10 +98,10 @@ class RealExampleTest {
 
     @Test
     fun testBigIntStubs() {
-        buildFileWithPlugins("""
+        buildFile.writeGradleSetupAnd("""
             configure<${Ts2ktUnofficialExtension::class.java.name}> {
                 dependencies {
-                    "ts2ktUnofficial"(":big-integer:1.6.36")
+                    "ts2ktUnofficial"("big-integer@1.6.36")
                 }
             }
         """.trimIndent())

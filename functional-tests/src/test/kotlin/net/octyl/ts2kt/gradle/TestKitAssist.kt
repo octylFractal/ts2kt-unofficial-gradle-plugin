@@ -40,6 +40,31 @@ object TestKitAssist {
 
 }
 
+internal fun File.writeGradleSetupAnd(moreText: String) {
+    writeText("""
+            buildscript {
+                repositories {
+                    jcenter()
+                }
+                dependencies {
+                    "classpath"("org.jetbrains.kotlin:kotlin-gradle-plugin:${'$'}embeddedKotlinVersion")
+                }
+            }
+            plugins {
+                id("kotlin2js")
+                id("net.octyl.ts2kt-unofficial")
+            }
+
+            repositories {
+                jcenter()
+            }
+
+            dependencies {
+                "compile"(kotlin("stdlib-js"))
+            }
+        """.trimIndent() + "\n" + moreText)
+}
+
 fun GradleRunner.withTs2ktPluginClasspath(): GradleRunner {
     withPluginClasspath(TestKitAssist.files)
     return this
