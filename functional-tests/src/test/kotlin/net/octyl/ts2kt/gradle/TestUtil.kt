@@ -39,7 +39,7 @@ fun cleanTs2ktRepositoryCaches() {
 const val PKG_BASE = "testsrc"
 
 val TemporaryFolder.kotlinSrcDir: File
-    get() = newFolder(*"src/main/kotlin/$PKG_BASE".split("/").toTypedArray())
+    get() = newFolder(*"src/main/kotlin".split("/").toTypedArray())
 
 fun TemporaryFolder.writeSrcFile(name: String,
                                  extraPkgName: String = "",
@@ -49,7 +49,7 @@ fun TemporaryFolder.writeSrcFile(name: String,
         extraPkgName.isBlank() -> PKG_BASE
         else -> "$PKG_BASE.${extraPkgName.trim()}"
     }
-    val spec = FileSpec.builder(pkgName, "$name.kt")
+    val spec = FileSpec.builder(pkgName, name)
             .apply(specBlock)
             .build()
 

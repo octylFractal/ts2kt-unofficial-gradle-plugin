@@ -22,12 +22,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.octyl.ts2kt.gradle.repository.npm
+package net.octyl.ts2kt.gradle.util
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class PartialPackageInfo(val dependencies: Map<String, String>?) {
+data class PartialPackageInfo(val name: String,
+                              val dependencies: Map<String, String>?) {
     companion object {
         // Versions can be modified in package.json using these strings, so toss them:
         private val VERSION_MODIFIERS = setOf(

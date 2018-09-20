@@ -40,6 +40,7 @@ import net.octyl.ts2kt.gradle.repository.ClientRepository
 import net.octyl.ts2kt.gradle.repository.ResolutionResult
 import net.octyl.ts2kt.gradle.repository.dependency.ClientDependency
 import net.octyl.ts2kt.gradle.repository.dependency.ExternalClientDependency
+import net.octyl.ts2kt.gradle.util.PartialPackageInfo
 import org.gradle.api.Project
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream

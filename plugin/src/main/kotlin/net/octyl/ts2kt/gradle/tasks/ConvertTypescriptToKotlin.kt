@@ -24,6 +24,10 @@
  */
 package net.octyl.ts2kt.gradle.tasks
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
+import net.octyl.ts2kt.gradle.util.PartialPackageInfo
 import net.octyl.ts2kt.gradle.util.field
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
@@ -32,6 +36,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import org.gradle.workers.WorkerExecutor
+import java.io.File
 import javax.inject.Inject
 
 open class ConvertTypescriptToKotlin @Inject constructor(
@@ -54,6 +59,8 @@ open class ConvertTypescriptToKotlin @Inject constructor(
     @get:Internal
     var outputDirectory by outputDirectoryProperty.field
 
+    private val mapper = ObjectMapper().registerModules(KotlinModule())
+
     @TaskAction
     fun convert() {
         val files = typescriptFiles.files
@@ -66,8 +73,30 @@ open class ConvertTypescriptToKotlin @Inject constructor(
             workerExecutor.submit(RunTs2ktForPackage::class.java) {
                 setParams(ts2ktScript?.asFile,
                         tsFile,
-                        outputDir.resolve(tsFile.parentFile.name))
+                        outputDir.resolve(tsFile.nodePackageName))
             }
         }
     }
+
+    private val File.nodePackageName: String
+        get() {
+            val pkgJsonFile = parentPackageJson
+            return when (pkgJsonFile) {
+                null -> parentFile.name
+                else -> mapper.readValue<PartialPackageInfo>(pkgJsonFile).name
+            }
+        }
+    private val File.parentPackageJson: File?
+        get() {
+            var directory: File? = parentFile
+            while (directory != null) {
+                val pkgJson = directory.listFiles().firstOrNull { it.name == "package.json" }
+                when {
+                    pkgJson != null -> return pkgJson
+                    else -> directory = directory.parentFile
+                }
+            }
+
+            return null
+        }
 }
