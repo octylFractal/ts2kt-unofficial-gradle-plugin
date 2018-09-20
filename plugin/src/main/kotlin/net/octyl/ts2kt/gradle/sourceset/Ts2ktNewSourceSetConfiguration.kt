@@ -1,5 +1,5 @@
 /*
- * This file is part of plugin, licensed under the MIT License (MIT).
+ * This file is part of ts2kt-unofficial-gradle-plugin-plugin, licensed under the MIT License (MIT).
  *
  * Copyright (c) Kenzie Togami <https://octyl.net>
  * Copyright (c) contributors
@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package net.octyl.ts2kt.gradle.sourceset
 
 import net.octyl.ts2kt.gradle.Ts2ktUnofficialExtension

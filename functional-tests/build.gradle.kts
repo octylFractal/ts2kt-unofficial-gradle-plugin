@@ -40,7 +40,7 @@ repositories {
 val sourceSetMain = sourceSets["main"]!!
 
 dependencies {
-    implementation(project(":plugin"))
+    implementation(project(":${rootProject.name}-plugin"))
     implementation(embeddedKotlin("gradle-plugin"))
 
     testImplementation(gradleTestKit())

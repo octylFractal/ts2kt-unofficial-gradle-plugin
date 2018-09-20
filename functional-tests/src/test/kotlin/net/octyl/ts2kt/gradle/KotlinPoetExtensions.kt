@@ -1,5 +1,5 @@
 /*
- * This file is part of functional-tests, licensed under the MIT License (MIT).
+ * This file is part of ts2kt-unofficial-gradle-plugin-functional-tests, licensed under the MIT License (MIT).
  *
  * Copyright (c) Kenzie Togami <https://octyl.net>
  * Copyright (c) contributors
