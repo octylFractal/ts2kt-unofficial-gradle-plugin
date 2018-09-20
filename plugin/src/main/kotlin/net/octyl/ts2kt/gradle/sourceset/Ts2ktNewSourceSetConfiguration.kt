@@ -30,7 +30,8 @@ import net.octyl.ts2kt.gradle.tasks.ConvertTypescriptToKotlin
 import net.octyl.ts2kt.gradle.tasks.DiscoverTs2ktExecutable
 import net.octyl.ts2kt.gradle.util.registerInfer
 import org.gradle.api.Project
-import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.Directory
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.getByType
@@ -57,6 +58,8 @@ class Ts2ktNewSourceSetConfiguration(
 
     private fun addConversionTask(configuration: ClientConfiguration): TaskProvider<ConvertTypescriptToKotlin> {
         val taskName = sourceSet.getTaskName("convert", "TypescriptToKotlin")
+        val outputDirectoryProvider = project.layout.buildDirectory.dir("generated/source/ts2kt/${sourceSet.name}/")
+
         return project.tasks.registerInfer<ConvertTypescriptToKotlin>(taskName) {
             description = "Converts Typescript files in source set ${sourceSet.name} to Kotlin."
 
@@ -64,10 +67,9 @@ class Ts2ktNewSourceSetConfiguration(
 
             ts2ktScriptProperty.set(discoverTask.ts2ktScriptProperty)
             typescriptFilesProperty.setFrom(Callable { configuration.allFiles })
-            outputDirectoryProperty.set(project.layout.buildDirectory.dir("generated/source/ts2kt/${sourceSet.name}/"))
-
-            addToIntellijGeneratedSources(outputDirectoryProperty)
+            outputDirectoryProperty.set(outputDirectoryProvider)
         }.also { task ->
+            hookIntellij(task, outputDirectoryProvider)
             project.tasks
                     .withType<Kotlin2JsCompile>()
                     .named(sourceSet.getTaskName("compile", "Kotlin2Js"))
@@ -79,8 +81,13 @@ class Ts2ktNewSourceSetConfiguration(
         }
     }
 
-    private fun addToIntellijGeneratedSources(outputDirectoryProperty: DirectoryProperty) {
+    private fun hookIntellij(task: TaskProvider<ConvertTypescriptToKotlin>,
+                             outputDirectoryProperty: Provider<Directory>) {
         val idea = (project.convention.findByName("idea") as IdeaModel?) ?: return
-        idea.module.generatedSourceDirs.add(outputDirectoryProperty.asFile.get())
+        idea.module.generatedSourceDirs.add(outputDirectoryProperty.get().asFile)
+
+        project.tasks.named("ideaModule").configure {
+            dependsOn(task)
+        }
     }
 }
