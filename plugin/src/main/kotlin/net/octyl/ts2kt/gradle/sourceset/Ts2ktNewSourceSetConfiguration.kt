@@ -36,7 +36,8 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
-import org.gradle.plugins.ide.idea.model.IdeaModel
+import org.gradle.plugins.ide.idea.GenerateIdeaModule
+import org.gradle.plugins.ide.idea.IdeaPlugin
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.util.concurrent.Callable
 
@@ -83,12 +84,14 @@ class Ts2ktNewSourceSetConfiguration(
 
     private fun hookIntellij(task: TaskProvider<ConvertTypescriptToKotlin>,
                              outputDirectoryProperty: Provider<Directory>) {
-        val idea = (project.convention.findByName("idea") as IdeaModel?) ?: return
-        idea.module.sourceDirs.add(outputDirectoryProperty.get().asFile)
-        idea.module.generatedSourceDirs.add(outputDirectoryProperty.get().asFile)
+        project.plugins.withType<IdeaPlugin> {
+            val idea = model
+            idea.module.sourceDirs.add(outputDirectoryProperty.get().asFile)
+            idea.module.generatedSourceDirs.add(outputDirectoryProperty.get().asFile)
 
-        project.tasks.named("ideaModule").configure {
-            dependsOn(task)
+            project.tasks.withType<GenerateIdeaModule>().configureEach {
+                dependsOn(task)
+            }
         }
     }
 }
