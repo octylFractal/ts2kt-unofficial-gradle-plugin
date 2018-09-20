@@ -24,9 +24,20 @@
  */
 package net.octyl.ts2kt.gradle.sourceset
 
+import org.gradle.api.file.SourceDirectorySet
+import org.gradle.api.internal.HasConvention
 import org.gradle.api.tasks.SourceSet
+import org.gradle.kotlin.dsl.getPlugin
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
 // unfortunately there is no API for this, so we just fake it like a task name.
 internal fun SourceSet.configurationName(name: String): String {
     return getTaskName(null, name)
 }
+
+val SourceSet.kotlin: SourceDirectorySet
+    get() =
+        (this as HasConvention)
+                .convention
+                .getPlugin<KotlinSourceSet>()
+                .kotlin

@@ -71,12 +71,12 @@ class Ts2ktNewSourceSetConfiguration(
             outputDirectoryProperty.set(outputDirectoryProvider)
         }.also { task ->
             hookIntellij(task, outputDirectoryProvider)
+            sourceSet.kotlin.srcDir(outputDirectoryProvider)
             project.tasks
                     .withType<Kotlin2JsCompile>()
                     .named(sourceSet.getTaskName("compile", "Kotlin2Js"))
                     .configure {
                         val convTask = task.get()
-                        source(convTask)
                         dependsOn(convTask)
                     }
         }
@@ -86,7 +86,6 @@ class Ts2ktNewSourceSetConfiguration(
                              outputDirectoryProperty: Provider<Directory>) {
         project.plugins.withType<IdeaPlugin> {
             val idea = model
-            idea.module.sourceDirs.add(outputDirectoryProperty.get().asFile)
             idea.module.generatedSourceDirs.add(outputDirectoryProperty.get().asFile)
 
             project.tasks.withType<GenerateIdeaModule>().configureEach {
