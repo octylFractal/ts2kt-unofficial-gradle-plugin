@@ -37,22 +37,20 @@ import org.gradle.kotlin.dsl.getByType
 
 class Ts2ktUnofficialPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        if (!project.plugins.hasPlugin("kotlin2js")) {
-            // We don't configure anything in this case.
-            // We also don't apply kotlin ourselves, as
-            // it would be weird -- your only (visible)
-            // plugin dependency could be ts2kt?
-            return
+        project.plugins.withId("kotlin2js") {
+            project.doApply()
         }
+    }
 
-        val ext = project.addExtension()
+    private fun Project.doApply() {
+        val ext = addExtension()
 
-        ext.clientRepositories.add(NpmClientRepository(project))
+        ext.clientRepositories.add(NpmClientRepository(this))
 
-        val discoverTaskProvider = project.addDiscoverTask(ext)
+        val discoverTaskProvider = addDiscoverTask(ext)
 
-        val sourceSets = project.extensions.getByType<SourceSetContainer>()
-        sourceSets.all { Ts2ktNewSourceSetConfiguration(project, discoverTaskProvider, this).configure() }
+        val sourceSets = extensions.getByType<SourceSetContainer>()
+        sourceSets.all { Ts2ktNewSourceSetConfiguration(this@doApply, discoverTaskProvider, this@all).configure() }
     }
 
     private fun Project.addExtension(): Ts2ktUnofficialExtension {

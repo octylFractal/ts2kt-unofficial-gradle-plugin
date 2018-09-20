@@ -83,7 +83,9 @@ dependencies {
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = jacksonVersion)
     implementation(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = jacksonVersion)
 
-    implementation(kotlin("stdlib-jdk8"))
+    // We expect these at runtime, stdlib from Gradle
+    // gradle-plugin from separate application in build script
+    compileOnly(embeddedKotlin("stdlib-jdk8"))
     compileOnly(embeddedKotlin("gradle-plugin"))
 
     testImplementation(group = "junit", name = "junit", version = "4.12")
