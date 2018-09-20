@@ -130,4 +130,18 @@ class RealExampleTest {
         assertEquals(TaskOutcome.SUCCESS, result.task(":build")!!.outcome)
     }
 
+    @Test
+    fun runsTwice() {
+        buildFile.writeGradleSetupAnd("")
+        val runGradleLocal = {
+            runGradle {
+                withArguments("discoverTs2ktExecutable", "-S", "--rerun-tasks")
+            }
+        }
+
+        assertEquals(TaskOutcome.SUCCESS, runGradleLocal().task(":discoverTs2ktExecutable")!!.outcome)
+
+        assertEquals(TaskOutcome.SUCCESS, runGradleLocal().task(":discoverTs2ktExecutable")!!.outcome)
+    }
+
 }

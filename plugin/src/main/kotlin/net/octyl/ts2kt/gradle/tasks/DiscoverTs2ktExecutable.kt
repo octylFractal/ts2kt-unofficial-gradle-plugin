@@ -80,7 +80,7 @@ open class DiscoverTs2ktExecutable : KotlinDefaultTask() {
         if (!scriptFile.parentFile.mkdirs() && !scriptFile.parentFile.exists()) {
             throw IllegalStateException("Could not create `${scriptFile.parentFile.canonicalPath}`.")
         }
-        if (!scriptFile.createNewFile()) {
+        if (!scriptFile.createNewFile() && !scriptFile.exists()) {
             throw IllegalStateException("Could not create `${scriptFile.canonicalPath}`.")
         }
         if (!scriptFile.setExecutable(true)) {
