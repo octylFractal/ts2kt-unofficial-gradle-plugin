@@ -84,6 +84,7 @@ class Ts2ktNewSourceSetConfiguration(
     private fun hookIntellij(task: TaskProvider<ConvertTypescriptToKotlin>,
                              outputDirectoryProperty: Provider<Directory>) {
         val idea = (project.convention.findByName("idea") as IdeaModel?) ?: return
+        idea.module.sourceDirs.add(outputDirectoryProperty.get().asFile)
         idea.module.generatedSourceDirs.add(outputDirectoryProperty.get().asFile)
 
         project.tasks.named("ideaModule").configure {
