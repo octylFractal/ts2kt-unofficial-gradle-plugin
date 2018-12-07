@@ -1,14 +1,11 @@
-import com.techshroom.inciseblue.InciseBluePluginApplication
 import net.researchgate.release.ReleaseExtension
-import nl.javadude.gradle.plugins.license.DownloadLicensesExtension.license
-import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("com.techshroom.incise-blue") version "0.0.12"
+    id("com.techshroom.incise-blue") version "0.2.1"
     id("net.researchgate.release") version "2.7.0"
     id("com.gradle.plugin-publish") version "0.10.0"
     `java-gradle-plugin`
@@ -17,14 +14,7 @@ plugins {
 }
 
 inciseBlue {
-    plugins {
-        license()
-    }
-}
-
-configure<LicenseExtension> {
-    include("**/*.kt")
-    mapping(mapOf("kt" to "SLASHSTAR_STYLE"))
+    license()
 }
 
 tasks.withType<KotlinJvmCompile> {
@@ -75,10 +65,10 @@ repositories {
 }
 
 dependencies {
-    val ktorVersion = "0.9.4"
+    val ktorVersion = "1.0.1"
     implementation(group = "io.ktor", name = "ktor-client-apache", version = ktorVersion)
 
-    val jacksonVersion = "2.9.6"
+    val jacksonVersion = "2.9.7"
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-core", version = jacksonVersion)
     implementation(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = jacksonVersion)
     implementation(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = jacksonVersion)
@@ -90,8 +80,4 @@ dependencies {
 
     testImplementation(group = "junit", name = "junit", version = "4.12")
     testImplementation(embeddedKotlin("test-junit"))
-}
-
-configure<KotlinJvmProjectExtension> {
-    experimental.coroutines = Coroutines.ENABLE
 }

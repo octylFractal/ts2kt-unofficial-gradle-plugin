@@ -34,8 +34,8 @@ import io.ktor.client.request.url
 import io.ktor.client.response.readText
 import io.ktor.http.HttpMethod
 import io.ktor.util.cio.writeChannel
-import kotlinx.coroutines.experimental.io.copyTo
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.io.jvm.nio.copyTo
+import kotlinx.coroutines.runBlocking
 import net.octyl.ts2kt.gradle.repository.ClientRepository
 import net.octyl.ts2kt.gradle.repository.ResolutionResult
 import net.octyl.ts2kt.gradle.repository.dependency.ClientDependency
@@ -45,6 +45,8 @@ import org.gradle.api.Project
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
 
 class NpmClientRepository(private val project: Project) : ClientRepository {
 
@@ -139,8 +141,12 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
 
         // copy to temporary file first
         val temporaryFile = downloadTarget.resolveSibling(".dl.${downloadTarget.name}")
+        val fileChannel = Files.newByteChannel(temporaryFile.toPath(),
+                StandardOpenOption.WRITE,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING)
         // default arguments don't work here due to KT-24461
-        call.response.content.copyTo(temporaryFile.writeChannel(), Long.MAX_VALUE)
+        call.response.content.copyTo(fileChannel)
         // then do a move to the actual file, which is less likely to be interrupted
         temporaryFile.renameTo(downloadTarget)
 

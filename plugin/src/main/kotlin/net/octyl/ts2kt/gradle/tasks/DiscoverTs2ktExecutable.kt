@@ -28,15 +28,16 @@ import net.octyl.ts2kt.gradle.util.PathLookup
 import net.octyl.ts2kt.gradle.util.field
 import net.octyl.ts2kt.gradle.util.file
 import net.octyl.ts2kt.gradle.util.ts2ktUnofficialDirectory
+import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.gradle.kotlin.dsl.property
+import org.gradle.kotlin.dsl.*
 
-open class DiscoverTs2ktExecutable : KotlinDefaultTask() {
+open class DiscoverTs2ktExecutable : DefaultTask() {
 
     @get:Input
     val ts2ktVersionProperty = project.objects.property<String>()
@@ -48,7 +49,7 @@ open class DiscoverTs2ktExecutable : KotlinDefaultTask() {
 
     @get:Input
     @get:Optional
-    val ts2ktProvidedExecutableProperty = project.layout.fileProperty()
+    val ts2ktProvidedExecutableProperty = project.objects.fileProperty()
     /**
      * A hard-coded executable path to use. Avoids lookup if this is set and exists.
      */
@@ -65,7 +66,7 @@ open class DiscoverTs2ktExecutable : KotlinDefaultTask() {
 
     @Suppress("LeakingThis")
     @get:OutputFile
-    val ts2ktScriptProperty = newOutputFile().apply {
+    val ts2ktScriptProperty = project.objects.fileProperty().apply {
         set(project.layout.ts2ktUnofficialDirectory.file("ts2kt.sh"))
     }
     /**

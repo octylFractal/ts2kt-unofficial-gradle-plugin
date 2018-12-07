@@ -29,6 +29,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import net.octyl.ts2kt.gradle.util.PartialPackageInfo
 import net.octyl.ts2kt.gradle.util.field
+import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
@@ -41,10 +42,10 @@ import javax.inject.Inject
 
 open class ConvertTypescriptToKotlin @Inject constructor(
         private val workerExecutor: WorkerExecutor
-) : KotlinDefaultTask() {
+) : DefaultTask() {
 
     @get:InputFile
-    val ts2ktScriptProperty = project.layout.fileProperty()
+    val ts2ktScriptProperty = project.objects.fileProperty()
     @get:Internal
     var ts2ktScript by ts2ktScriptProperty.field
 
@@ -55,7 +56,7 @@ open class ConvertTypescriptToKotlin @Inject constructor(
     var typescriptFiles by typescriptFilesProperty.field
 
     @get:OutputDirectory
-    val outputDirectoryProperty = newOutputDirectory()
+    val outputDirectoryProperty = project.objects.directoryProperty()
     @get:Internal
     var outputDirectory by outputDirectoryProperty.field
 

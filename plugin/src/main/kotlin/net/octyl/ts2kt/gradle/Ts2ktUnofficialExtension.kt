@@ -35,7 +35,7 @@ import org.gradle.kotlin.dsl.setProperty
 open class Ts2ktUnofficialExtension(private val project: Project) {
 
     val ts2ktVersionProperty = project.objects.property<String>().apply { set("0.1.3") }
-    val ts2ktExecutableProperty = project.layout.fileProperty()
+    val ts2ktExecutableProperty = project.objects.fileProperty()
 
     /**
      * Version of the NPM package `ts2kt` to install.
@@ -64,7 +64,7 @@ open class Ts2ktUnofficialExtension(private val project: Project) {
         return clientConfigurations[name] ?: createClientConfiguration(name)
     }
 
-    val clientRepositories = project.objects.setProperty<ClientRepository>()
+    val clientRepositories = project.objects.setProperty<ClientRepository>().empty()
 
     fun dependencies(block: ClientDependencyHandlerScope.() -> Unit) {
         ClientDependencyHandlerScope(this).block()

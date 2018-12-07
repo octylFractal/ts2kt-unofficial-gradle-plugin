@@ -1,23 +1,13 @@
-import com.techshroom.inciseblue.InciseBluePluginApplication
-import nl.javadude.gradle.plugins.license.DownloadLicensesExtension.license
-import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("com.techshroom.incise-blue") version "0.0.12"
+    id("com.techshroom.incise-blue") version "0.2.1"
     kotlin("jvm") version embeddedKotlinVersion
 }
 
 inciseBlue {
-    plugins {
-        license()
-    }
-}
-
-configure<LicenseExtension> {
-    include("**/*.kt")
-    mapping(mapOf("kt" to "SLASHSTAR_STYLE"))
+    license()
 }
 
 tasks.withType<KotlinJvmCompile> {
@@ -46,7 +36,10 @@ dependencies {
     testImplementation(gradleTestKit())
     testImplementation(group = "junit", name = "junit", version = "4.12")
     testImplementation(embeddedKotlin("test-junit"))
-    testImplementation(group = "com.squareup", name = "kotlinpoet", version = "1.0.0-RC1")
+    testImplementation(group = "com.squareup", name = "kotlinpoet", version = "1.0.0-RC3") {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
+    }
 }
 
 val createClasspathManifest by tasks.registering {
