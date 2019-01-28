@@ -94,7 +94,7 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
         return when {
             (dependency is ExternalClientDependency
                     && dependency.version != null) -> runBlocking { doResolve(dependency) }
-            else -> ResolutionResult.NotFound()
+            else -> ResolutionResult.Error()
         }
     }
 
@@ -150,8 +150,8 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
         }
         when (call.response.status.value) {
             in 200..299 -> Unit
-            404, 405 -> return ResolutionResult.NotFound(NoSuchElementException(call.request.url.toString()))
-            in 500..599 -> return ResolutionResult.NotFound(RuntimeException(call.response.readText()))
+            404, 405 -> return ResolutionResult.Error(NoSuchElementException(call.request.url.toString()))
+            in 500..599 -> return ResolutionResult.Error(RuntimeException(call.response.readText()))
         }
 
         // copy to temporary file first

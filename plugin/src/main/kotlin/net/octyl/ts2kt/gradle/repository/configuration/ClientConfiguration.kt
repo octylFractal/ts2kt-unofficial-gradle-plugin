@@ -68,7 +68,7 @@ class ClientConfiguration(val name: String,
 
     private fun resolveDependency(dep: ClientDependency,
                                   outputFiles: ConfigurableFileCollection): List<ClientDependency> {
-        val errors = LinkedHashMap<ClientRepository, ResolutionResult.NotFound>()
+        val errors = LinkedHashMap<ClientRepository, ResolutionResult.Error>()
         for (repo in repositories.get()) {
             val resolved = repo.resolveDependency(dep)
             ensureExhausted(when (resolved) {
@@ -76,7 +76,7 @@ class ClientConfiguration(val name: String,
                     outputFiles.from(resolved.files)
                     return resolved.dependencies
                 }
-                is ResolutionResult.NotFound -> errors.put(repo, resolved)
+                is ResolutionResult.Error -> errors.put(repo, resolved)
             })
         }
 
