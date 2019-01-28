@@ -35,6 +35,7 @@ import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.os.OperatingSystem
 import org.gradle.kotlin.dsl.*
 
 open class DiscoverTs2ktExecutable : DefaultTask() {
@@ -67,7 +68,7 @@ open class DiscoverTs2ktExecutable : DefaultTask() {
     @Suppress("LeakingThis")
     @get:OutputFile
     val ts2ktScriptProperty = project.objects.fileProperty().apply {
-        set(project.layout.ts2ktUnofficialDirectory.file("ts2kt.sh"))
+        set(project.layout.ts2ktUnofficialDirectory.file(ts2ktScriptDescriptor().fileName))
     }
     /**
      * Script that, when run, will call `ts2kt`.
@@ -88,10 +89,7 @@ open class DiscoverTs2ktExecutable : DefaultTask() {
             throw IllegalStateException("Could not make `${scriptFile.canonicalPath}` executable.")
         }
 
-        scriptFile.writeText("""
-            |#!/usr/bin/env sh
-            |${ts2ktInvocation()} "$@"
-            """.trimMargin("|"))
+        scriptFile.writeText(ts2ktScriptDescriptor().fileContent(ts2ktInvocation()))
     }
 
     private fun ts2ktInvocation(): String {
@@ -100,10 +98,8 @@ open class DiscoverTs2ktExecutable : DefaultTask() {
             return ts2ktInstalled.canonicalPath
         }
 
-        findPath.find("npx")
-                ?: throw IllegalStateException("`npx` is not installed. Cannot run `ts2kt`.")
-        val packageOption = getPackageOption()
-        return "npx -p '$packageOption' ts2kt"
+        findPath.find("npx") ?: throw IllegalStateException("`npx` is not installed. Cannot run `ts2kt`.")
+        return ts2ktScriptDescriptor().npxInvocation(getPackageOption())
     }
 
     private fun getPackageOption(): String {
@@ -118,5 +114,38 @@ open class DiscoverTs2ktExecutable : DefaultTask() {
             }
         }
     }
+}
 
+/**
+ * Information on what to name the ts2kt script and what to put inside, based on the build platform
+ */
+private fun ts2ktScriptDescriptor() = with(OperatingSystem.current()) {
+    when {
+        isWindows -> Script.Bat
+        isUnix -> Script.Sh
+        else -> throw IllegalStateException("Unknown edge case: Platform that is neither Windows not Unix")
+    }
+}
+
+
+private sealed class Script(
+        val fileName: String,
+        val npxInvocation: (packageOption: String) -> String,
+        val fileContent: (ts2ktInvocation: String) -> String
+) {
+    object Bat : Script(
+            "ts2kt.bat",
+            { packageOption -> "npx -p $packageOption ts2kt" },
+            { ts2ktInvocation ->
+                  "@echo off\r\n" +
+                  "$ts2ktInvocation \"%*\"\r\n"
+            }
+    )
+    object Sh : Script(
+            "ts2kt.sh",
+            { packageOption -> "npx -p '$packageOption' ts2kt" },
+            { ts2ktInvocation -> """
+                    |#!/usr/bin/env sh
+                    |$ts2ktInvocation "$@"
+                """.trimMargin("|") })
 }

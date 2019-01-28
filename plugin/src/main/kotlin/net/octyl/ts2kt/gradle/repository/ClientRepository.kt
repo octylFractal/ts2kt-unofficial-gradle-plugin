@@ -31,7 +31,7 @@ sealed class ResolutionResult {
     data class Success(val files: FileCollection,
                        val dependencies: List<ClientDependency> = listOf()) : ResolutionResult()
 
-    data class NotFound(val error: Throwable? = null) : ResolutionResult()
+    data class Error(val error: Throwable? = null) : ResolutionResult()
 }
 
 interface ClientRepository {

@@ -34,18 +34,21 @@ import io.ktor.client.request.url
 import io.ktor.client.response.readText
 import io.ktor.http.HttpMethod
 import io.ktor.util.cio.writeChannel
-import kotlinx.coroutines.io.jvm.nio.copyTo
+import kotlinx.coroutines.io.close
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.io.copyTo
 import net.octyl.ts2kt.gradle.repository.ClientRepository
 import net.octyl.ts2kt.gradle.repository.ResolutionResult
 import net.octyl.ts2kt.gradle.repository.dependency.ClientDependency
 import net.octyl.ts2kt.gradle.repository.dependency.ExternalClientDependency
 import net.octyl.ts2kt.gradle.util.PartialPackageInfo
 import org.gradle.api.Project
+import org.gradle.internal.os.OperatingSystem
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 
 class NpmClientRepository(private val project: Project) : ClientRepository {
@@ -62,8 +65,21 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
     private val registryUrl: String by lazy {
         val cap = ByteArrayOutputStream()
 
+        val npm = with (OperatingSystem.current()) {
+            when {
+                // on Windows, NPM is a .bat file that needs to run under cmd.exe
+                isWindows -> arrayOf("cmd", "/c", "npm")
+                isLinux -> arrayOf("npm")
+                else -> {
+                    // A good default, but this command may not work unless you have tested the platform. Warn the user.
+                    project.logger.warn("Executing 'npm', this command may not be correct on the current build platform.")
+                    arrayOf("npm")
+                }
+            }
+        }
+
         project.exec {
-            commandLine("npm", "config", "get", "registry")
+            commandLine(*npm, "config", "get", "registry")
             standardOutput = cap
         }
 
@@ -79,7 +95,7 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
         return when {
             (dependency is ExternalClientDependency
                     && dependency.version != null) -> runBlocking { doResolve(dependency) }
-            else -> ResolutionResult.NotFound()
+            else -> ResolutionResult.Error()
         }
     }
 
@@ -135,21 +151,25 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
         }
         when (call.response.status.value) {
             in 200..299 -> Unit
-            404, 405 -> return ResolutionResult.NotFound(NoSuchElementException(call.request.url.toString()))
-            in 500..599 -> return ResolutionResult.NotFound(RuntimeException(call.response.readText()))
+            404, 405 -> return ResolutionResult.Error(NoSuchElementException(call.request.url.toString()))
+            in 500..599 -> return ResolutionResult.Error(RuntimeException(call.response.readText()))
         }
 
         // copy to temporary file first
         val temporaryFile = downloadTarget.resolveSibling(".dl.${downloadTarget.name}")
-        val fileChannel = Files.newByteChannel(temporaryFile.toPath(),
-                StandardOpenOption.WRITE,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING)
+        val writeChannel = temporaryFile.writeChannel()
         // default arguments don't work here due to KT-24461
-        call.response.content.copyTo(fileChannel)
+        call.response.content.copyTo(writeChannel, Long.MAX_VALUE)
+        writeChannel.flush()
+        writeChannel.close()
         // then do a move to the actual file, which is less likely to be interrupted
-        temporaryFile.renameTo(downloadTarget)
-
+        try {
+            // Platform-independent rename/move operation
+            Files.move(temporaryFile.toPath(), downloadTarget.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        } catch (t: Throwable) {
+            // More descriptive file rename error information
+            return ResolutionResult.Error(t)
+        }
         return null
     }
 
