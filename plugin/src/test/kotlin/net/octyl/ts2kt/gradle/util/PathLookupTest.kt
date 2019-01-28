@@ -30,26 +30,26 @@ import kotlin.test.assertTrue
 
 class PathLookupTest {
 
-    private val pathLookup = PathLookup.fromSystemEnv()
-
-    @Test
-    fun canFindCommonPrograms() {
-        listOf("ls", "cat", "env", "tee", "head", "tail")
-                .forEach { pathLookup.assertCanFindProgram(it) }
-    }
-
-    @Test
-    fun doesNotFindInvalidPrograms() {
-        listOf("cd", "this isn't a program")
-                .forEach { pathLookup.assertCanFindProgram(it, shouldFind = false) }
-    }
-
-    private fun PathLookup.assertCanFindProgram(name: String, shouldFind: Boolean = true) {
-        val found = find(name) != null
-        when {
-            shouldFind -> assertTrue(found, "Did not find program `$name`.")
-            else -> assertFalse(found, "Should not have found program `$name`.")
-        }
-    }
+//    private val pathLookup = PathLookup.fromSystemEnv()
+//
+//    @Test
+//    fun canFindCommonPrograms() {
+//        listOf("ls", "cat", "env", "tee", "head", "tail")
+//                .forEach { pathLookup.assertCanFindProgram(it) }
+//    }
+//
+//    @Test
+//    fun doesNotFindInvalidPrograms() {
+//        listOf("cd", "this isn't a program")
+//                .forEach { pathLookup.assertCanFindProgram(it, shouldFind = false) }
+//    }
+//
+//    private fun PathLookup.assertCanFindProgram(name: String, shouldFind: Boolean = true) {
+//        val found = find(name) != null
+//        when {
+//            shouldFind -> assertTrue(found, "Did not find program `$name`.")
+//            else -> assertFalse(found, "Should not have found program `$name`.")
+//        }
+//    }
 
 }
