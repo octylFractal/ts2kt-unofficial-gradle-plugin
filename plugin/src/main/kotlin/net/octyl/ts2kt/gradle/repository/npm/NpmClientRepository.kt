@@ -68,8 +68,7 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
             when {
                 // on Windows, NPM is a .bat file that needs to run under cmd.exe
                 isWindows -> arrayOf("cmd", "/c", "npm")
-                // TODO @kenzierocks: fill in whatever platform you build on, possibly Linux?
-                // isLinux -> arrayOf("npm")
+                isLinux -> arrayOf("npm")
                 else -> {
                     // A good default, but this command may not work unless you have tested the platform. Warn the user.
                     project.logger.warn("Executing 'npm', this command may not be correct on the current build platform.")
@@ -173,12 +172,6 @@ class NpmClientRepository(private val project: Project) : ClientRepository {
             // More descriptive file rename error information
             return ResolutionResult.Error(t)
         }
-
-        /* Alternatively, use the old operation with less error feedback. I wasn't able to get this working on Windows. /timothyolt
-            val renameSuccess = temporaryFile.renameTo(downloadTarget)
-            // handle rename success
-            if (!renameSuccess) return ResolutionResult.Error(IOException("Could not rename file $temporaryFile to $downloadTarget"))
-        */
         return null
     }
 

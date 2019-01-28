@@ -88,11 +88,7 @@ open class DiscoverTs2ktExecutable : KotlinDefaultTask() {
             throw IllegalStateException("Could not make `${scriptFile.canonicalPath}` executable.")
         }
 
-        val script = ts2ktScriptDescriptor().fileContent(ts2ktInvocation())
-
-        project.logger.error(script)
-
-        scriptFile.writeText(script)
+        scriptFile.writeText(ts2ktScriptDescriptor().fileContent(ts2ktInvocation()))
     }
 
     private fun ts2ktInvocation(): String {
